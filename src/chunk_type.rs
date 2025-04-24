@@ -1,6 +1,9 @@
 
+use std::{io, str::FromStr};
+
 use crate::{Error, Result};
 
+#[derive(Debug)]
 struct ChunkType {
     data: [u8; 4], // Actual data.
 }
@@ -19,6 +22,31 @@ impl TryFrom<[u8; 4]> for ChunkType {
     }
 }
 
+impl FromStr for ChunkType {
+    type Err = Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        if s.len() != 4 {
+            return Err(Box::new(io::Error::new(io::ErrorKind::InvalidInput, "wrong_size")))
+        }
+
+        match s.as_bytes().try_into() {
+            Ok(arr) => Ok(ChunkType{data: arr}),
+            Err(e) =>  Err(Box::new(e))
+        }
+    }
+}
+
+impl PartialEq for ChunkType {
+    fn eq(&self, other: &Self) -> bool {
+        self.bytes() == other.bytes()
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        self.bytes() != other.bytes()
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -33,7 +61,7 @@ mod tests {
 
         assert_eq!(expected, actual.bytes());
     }
-/*
+
     #[test]
     pub fn test_chunk_type_from_str() {
         let expected = ChunkType::try_from([82, 117, 83, 116]).unwrap();
@@ -41,6 +69,7 @@ mod tests {
         assert_eq!(expected, actual);
     }
 
+/*
     #[test]
     pub fn test_chunk_type_is_critical() {
         let chunk = ChunkType::from_str("RuSt").unwrap();
