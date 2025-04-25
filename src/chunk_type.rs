@@ -3,11 +3,6 @@ use std::{io, str::FromStr};
 
 use crate::{Error, Result};
 
-const CRITICAL_BIT: u8 = 0x20;
-const PUBLIC_BIT: u8 = 0x20;
-const RESERVED_BIT: u8 = 0x20;
-const SAFE_TO_COPY_BIT: u8 = 0x20;
-
 #[derive(Debug)]
 struct ChunkType {
     data: [u8; 4], // Actual data.
@@ -19,33 +14,35 @@ impl ChunkType {
     }
 
     fn is_critical(&self) -> bool {
-        if (self.data[0] & CRITICAL_BIT) != 0 {
-            return false
+        if u8::is_ascii_uppercase(&self.data[0]) {
+            return true
         }
 
-        return true
+        return false
     }
 
     fn is_public(&self) -> bool {
-        if (self.data[1] & PUBLIC_BIT) != 0 {
-            return false
+        if u8::is_ascii_uppercase(&self.data[1]) {
+            return true
         }
 
-        return true
+        return false
     }
 
     fn is_reserved_bit_valid(&self) -> bool {
-        if (self.data[2] & RESERVED_BIT) == 0 {
+        if u8::is_ascii_uppercase(&self.data[2]) {
             return true
         }
+
         return false
     }
 
     fn is_safe_to_copy(&self) -> bool {
-        if (self.data[3] & SAFE_TO_COPY_BIT) == 0 {
-            return false
+        if u8::is_ascii_lowercase(&self.data[3]) {
+            return true
         }
-        return true
+
+        return false
     }
 }
 
