@@ -3,6 +3,9 @@ use std::{io, str::FromStr};
 
 use crate::{Error, Result};
 
+const CRITICAL_BIT: u8 = 0x20;
+const PUBLIC_BIT: u8 = 0x20;
+
 #[derive(Debug)]
 struct ChunkType {
     data: [u8; 4], // Actual data.
@@ -14,7 +17,7 @@ impl ChunkType {
     }
 
     fn is_critical(&self) -> bool {
-        if (self.data[0] & 0x20) != 0 {
+        if (self.data[0] & CRITICAL_BIT) != 0 {
             return false
         }
 
@@ -22,7 +25,7 @@ impl ChunkType {
     }
 
     fn is_public(&self) -> bool {
-        if (self.data[1] & 0x20) != 0 {
+        if (self.data[1] & PUBLIC_BIT) != 0 {
             return false
         }
 
