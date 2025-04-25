@@ -20,6 +20,14 @@ impl ChunkType {
 
         return true
     }
+
+    fn is_public(&self) -> bool {
+        if (self.data[1] & 0x20) != 0 {
+            return false
+        }
+
+        return true
+    }
 }
 
 impl TryFrom<[u8; 4]> for ChunkType {
@@ -90,7 +98,6 @@ mod tests {
         assert!(!chunk.is_critical());
     }
 
-/*
     #[test]
     pub fn test_chunk_type_is_public() {
         let chunk = ChunkType::from_str("RUSt").unwrap();
@@ -103,6 +110,7 @@ mod tests {
         assert!(!chunk.is_public());
     }
 
+    /*
     #[test]
     pub fn test_chunk_type_is_reserved_bit_valid() {
         let chunk = ChunkType::from_str("RuSt").unwrap();
