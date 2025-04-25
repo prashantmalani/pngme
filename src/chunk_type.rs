@@ -44,6 +44,24 @@ impl ChunkType {
 
         return false
     }
+
+    fn is_valid(&self) -> bool {
+        if !self.is_reserved_bit_valid() {
+            return false
+        }
+
+        let orig_str = std::str::from_utf8(&self.data);
+        match orig_str {
+            Ok(s) => {
+                println!("Converted from UTF8 correctly");
+                return s.is_ascii()
+            }
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                return false
+            },
+        }
+    }
 }
 
 impl TryFrom<[u8; 4]> for ChunkType {
@@ -60,6 +78,11 @@ impl FromStr for ChunkType {
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         if s.len() != 4 {
             return Err(Box::new(io::Error::new(io::ErrorKind::InvalidInput, "wrong_size")))
+        }
+
+        if !s.chars().all(char::is_alphabetic) {
+            return Err(Box::new(io::Error::new(io::ErrorKind::InvalidInput,
+                                        "provided string is not ASCII/letters")))
         }
 
         match s.as_bytes().try_into() {
@@ -150,7 +173,6 @@ mod tests {
         assert!(!chunk.is_safe_to_copy());
     }
 
-    /*
     #[test]
     pub fn test_valid_chunk_is_valid() {
         let chunk = ChunkType::from_str("RuSt").unwrap();
@@ -166,6 +188,7 @@ mod tests {
         assert!(chunk.is_err());
     }
 
+    /*
     #[test]
     pub fn test_chunk_type_string() {
         let chunk = ChunkType::from_str("RuSt").unwrap();
