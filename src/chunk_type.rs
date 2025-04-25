@@ -5,6 +5,7 @@ use crate::{Error, Result};
 
 const CRITICAL_BIT: u8 = 0x20;
 const PUBLIC_BIT: u8 = 0x20;
+const RESERVED_BIT: u8 = 0x20;
 
 #[derive(Debug)]
 struct ChunkType {
@@ -30,6 +31,13 @@ impl ChunkType {
         }
 
         return true
+    }
+
+    fn is_reserved_bit_valid(&self) -> bool {
+        if (self.data[2] & RESERVED_BIT) == 0 {
+            return true
+        }
+        return false
     }
 }
 
@@ -113,7 +121,6 @@ mod tests {
         assert!(!chunk.is_public());
     }
 
-    /*
     #[test]
     pub fn test_chunk_type_is_reserved_bit_valid() {
         let chunk = ChunkType::from_str("RuSt").unwrap();
@@ -126,6 +133,7 @@ mod tests {
         assert!(!chunk.is_reserved_bit_valid());
     }
 
+    /*
     #[test]
     pub fn test_chunk_type_is_safe_to_copy() {
         let chunk = ChunkType::from_str("RuSt").unwrap();
