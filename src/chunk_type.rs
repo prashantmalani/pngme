@@ -102,6 +102,11 @@ impl PartialEq for ChunkType {
     }
 }
 
+impl std::fmt::Display for ChunkType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", std::str::from_utf8(&self.data).unwrap())
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -188,7 +193,6 @@ mod tests {
         assert!(chunk.is_err());
     }
 
-    /*
     #[test]
     pub fn test_chunk_type_string() {
         let chunk = ChunkType::from_str("RuSt").unwrap();
@@ -202,5 +206,4 @@ mod tests {
         let _chunk_string = format!("{}", chunk_type_1);
         let _are_chunks_equal = chunk_type_1 == chunk_type_2;
     }
-    */
 }
