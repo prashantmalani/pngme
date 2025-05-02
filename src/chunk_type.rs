@@ -4,12 +4,12 @@ use std::{io, str::FromStr};
 use crate::{Error, Result};
 
 #[derive(Debug)]
-struct ChunkType {
+pub struct ChunkType {
     data: [u8; 4], // Actual data.
 }
 
 impl ChunkType {
-    fn bytes(&self) -> [u8; 4] {
+    pub fn bytes(&self) -> [u8; 4] {
         return self.data
     }
 
