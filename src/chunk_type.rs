@@ -45,7 +45,7 @@ impl ChunkType {
         return false
     }
 
-    fn is_valid(&self) -> bool {
+    pub fn is_valid(&self) -> bool {
         if !self.is_reserved_bit_valid() {
             return false
         }

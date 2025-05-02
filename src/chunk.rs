@@ -1,5 +1,8 @@
 
-use crate::chunk_type::ChunkType;
+use crate::{chunk_type::ChunkType, Error};
+use core::str;
+use std::io;
+use std::str::FromStr;
 
 use crc32fast::Hasher;
 
@@ -28,6 +31,40 @@ impl Chunk {
         hasher.update(crc_payload.as_slice());
         return hasher.finalize()
     }
+
+    fn chunk_type(&self) -> &ChunkType {
+        &self.chunk_type
+    }
+}
+
+impl TryFrom<&[u8]> for Chunk {
+    type Error = Error;
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        // A valid chunk needs:
+        // Length: 4 bytes
+        // Type: 4 bytes
+        // CRC: 4 bytes
+        // So any data slice less than 12 bytes can be eliminated immediately.
+        if value.len() < 12 {
+            return Err(Box::new(io::Error::new(io::ErrorKind::InvalidInput, "invalid length")));
+        }
+        // Extract Chunk Type and check it.
+        let type_bytes = &value[4..8];
+        let ctype = match ChunkType::from_str(str::from_utf8(type_bytes).unwrap()) {
+            Ok(c) => {
+                if !c.is_valid() {
+                    return Err(Box::new(io::Error::new(io::ErrorKind::InvalidInput, "invalid chunk type")));
+                }
+                c
+            },
+            Err(e) => return Err(e),
+        };
+
+
+        let data = &value[8..(value.len()-4)];
+
+        Ok(Chunk{chunk_type: ctype, data: data.to_vec()})
+    }
 }
 
 #[cfg(test)]
@@ -45,7 +82,6 @@ mod tests {
         assert_eq!(chunk.crc(), 2882656334);
     }
 
-    /*
     fn testing_chunk() -> Chunk {
         let data_length: u32 = 42;
         let chunk_type = "RuSt".as_bytes();
@@ -76,6 +112,7 @@ mod tests {
         assert_eq!(chunk.chunk_type().to_string(), String::from("RuSt"));
     }
 
+    /*
     #[test]
     fn test_chunk_string() {
         let chunk = testing_chunk();
