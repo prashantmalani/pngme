@@ -135,7 +135,6 @@ mod tests {
         assert_eq!(chunk.crc(), 2882656334);
     }
 
-    /*
     #[test]
     fn test_valid_chunk_from_bytes() {
         let data_length: u32 = 42;
@@ -163,6 +162,7 @@ mod tests {
         assert_eq!(chunk.crc(), 2882656334);
     }
 
+/*
     #[test]
     fn test_invalid_chunk_from_bytes() {
         let data_length: u32 = 42;
