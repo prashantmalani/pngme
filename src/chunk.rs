@@ -81,6 +81,12 @@ impl TryFrom<&[u8]> for Chunk {
     }
 }
 
+impl std::fmt::Display for Chunk {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.data_as_string().unwrap())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -189,7 +195,6 @@ mod tests {
         assert!(chunk.is_err());
     }
 
-    /*
     #[test]
     pub fn test_chunk_trait_impls() {
         let data_length: u32 = 42;
@@ -210,5 +215,4 @@ mod tests {
         
         let _chunk_string = format!("{}", chunk);
     }
-    */
 }

@@ -53,7 +53,6 @@ impl ChunkType {
         let orig_str = std::str::from_utf8(&self.data);
         match orig_str {
             Ok(s) => {
-                println!("Converted from UTF8 correctly");
                 return s.is_ascii()
             }
             Err(e) => {
