@@ -70,8 +70,14 @@ impl TryFrom<&[u8]> for Chunk {
 
 
         let data = &value[8..(value.len()-4)];
+        let chunk = Chunk{chunk_type: ctype, data: data.to_vec()};
 
-        Ok(Chunk{chunk_type: ctype, data: data.to_vec()})
+        // Make sure the provided CRC matches what we calculate.
+        if chunk.crc() != u32::from_be_bytes(value[(value.len() - 4)..].try_into().unwrap()) {
+            return Err(Box::new(io::Error::new(io::ErrorKind::InvalidData, "invalid CRC provided")));
+        }
+
+        Ok(chunk)
     }
 }
 
@@ -162,7 +168,6 @@ mod tests {
         assert_eq!(chunk.crc(), 2882656334);
     }
 
-/*
     #[test]
     fn test_invalid_chunk_from_bytes() {
         let data_length: u32 = 42;
@@ -184,6 +189,7 @@ mod tests {
         assert!(chunk.is_err());
     }
 
+    /*
     #[test]
     pub fn test_chunk_trait_impls() {
         let data_length: u32 = 42;
