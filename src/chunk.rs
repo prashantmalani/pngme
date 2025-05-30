@@ -6,17 +6,17 @@ use std::str::FromStr;
 
 use crc32fast::Hasher;
 
-struct Chunk {
+pub struct Chunk {
     chunk_type: ChunkType,
     data: Vec<u8>,
 }
 
 impl Chunk {
-    fn new(chunk_type: ChunkType, data: Vec<u8>) -> Chunk {
+    pub fn new(chunk_type: ChunkType, data: Vec<u8>) -> Chunk {
         Chunk {chunk_type: chunk_type, data: data}
     }
 
-    fn length(&self) -> u32 {
+    pub fn length(&self) -> u32 {
         self.data.len().try_into().unwrap()
     }
 
@@ -43,7 +43,20 @@ impl Chunk {
             Err(Box::new(io::Error::new(io::ErrorKind::InvalidData, "invalid chunk")))
         }
     }
-}
+
+    pub fn as_bytes(&self) -> Vec<u8> {
+        let chunk_data: Vec<u8> = (self.data.len() as u32)
+        .to_be_bytes()
+        .iter()
+        .chain(self.chunk_type.bytes().iter())
+        .chain(self.data.as_slice().iter())
+        .chain(self.crc().to_be_bytes().iter())
+        .copied()
+        .collect();
+
+        return chunk_data;
+    }
+ }
 
 impl TryFrom<&[u8]> for Chunk {
     type Error = Error;
@@ -68,12 +81,12 @@ impl TryFrom<&[u8]> for Chunk {
             Err(e) => return Err(e),
         };
 
-
-        let data = &value[8..(value.len()-4)];
+        let length_field = u32::from_be_bytes(value[..4].try_into().unwrap()) as usize;
+        let data = &value[8..(8 + length_field)];
         let chunk = Chunk{chunk_type: ctype, data: data.to_vec()};
 
         // Make sure the provided CRC matches what we calculate.
-        if chunk.crc() != u32::from_be_bytes(value[(value.len() - 4)..].try_into().unwrap()) {
+        if chunk.crc() != u32::from_be_bytes(value[(8 + length_field)..(12 + length_field)].try_into().unwrap()) {
             return Err(Box::new(io::Error::new(io::ErrorKind::InvalidData, "invalid CRC provided")));
         }
 
