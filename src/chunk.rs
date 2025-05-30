@@ -32,11 +32,11 @@ impl Chunk {
         return hasher.finalize()
     }
 
-    fn chunk_type(&self) -> &ChunkType {
+    pub fn chunk_type(&self) -> &ChunkType {
         &self.chunk_type
     }
 
-    fn data_as_string(&self) -> Result<String> {
+    pub fn data_as_string(&self) -> Result<String> {
         if self.chunk_type.is_valid() {
             Ok(String::from_utf8(self.data.as_slice().to_vec()).unwrap())
         } else {

@@ -17,6 +17,15 @@ impl Png {
     fn chunks(&self) -> &[Chunk] {
         self.chunks.as_slice()
     }
+
+    fn chunk_by_type(&self, chunk_type: &str) -> Option<&Chunk> {
+        for chunk in self.chunks.iter() {
+            if chunk.chunk_type().to_string() == chunk_type {
+                return Some(chunk);
+            }
+        }
+        return None;
+    }
 }
 
 impl TryFrom<&[u8]> for Png {
@@ -118,7 +127,6 @@ mod tests {
         assert!(png.is_err());
     }
 
-    /*
     #[test]
     fn test_invalid_chunk() {
         let mut chunk_bytes: Vec<u8> = testing_chunks()
@@ -141,7 +149,6 @@ mod tests {
         assert!(png.is_err());
     }
 
-
     #[test]
     fn test_list_chunks() {
         let png = testing_png();
@@ -158,6 +165,7 @@ mod tests {
 
     }
 
+    /*
     #[test]
     fn test_append_chunk() {
         let mut png = testing_png();
