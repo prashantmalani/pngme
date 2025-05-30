@@ -1,10 +1,55 @@
+use crate::chunk::Chunk;
+use crate::{Error, Result};
+
+use std::io;
+
+struct Png {
+    chunks: Vec<Chunk>,
+}
+
+impl Png {
+    const STANDARD_HEADER: [u8; 8] = [137, 80, 78, 71, 13, 10, 26, 10];
+
+    fn from_chunks(chunks: Vec<Chunk>) -> Png {
+        Png{chunks: chunks}
+    }
+
+    fn chunks(&self) -> &[Chunk] {
+        self.chunks.as_slice()
+    }
+}
+
+impl TryFrom<&[u8]> for Png {
+    type Error = Error;
+
+    fn try_from(value: &[u8]) -> Result<Self> {
+        // First check that the standard header exists, otherwise bail.
+        if value.len() < 8 || value[..8] != Png::STANDARD_HEADER {
+            return Err(Box::new(io::Error::new(io::ErrorKind::InvalidData, "invalid header")))
+        }
+
+        let mut start_len = 8;
+        let mut chunk_vec: Vec<Chunk> = Vec::new();
+        while start_len < value.len() {
+            match Chunk::try_from(&value[start_len..]) {
+                Ok(c) => {
+                    // Forward the start pointer to the next chunk.
+                    start_len += c.length() as usize + 12;
+                    chunk_vec.push(c);
+                },
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(Png::from_chunks(chunk_vec))
+    }
+}
+
 #[cfg(test)]
 mod tests {
-/*
+
     use super::*;
     use crate::chunk_type::ChunkType;
     use crate::chunk::Chunk;
-    use std::str::FromStr;
     use std::convert::TryFrom;
 
     fn testing_chunks() -> Vec<Chunk> {
@@ -73,6 +118,7 @@ mod tests {
         assert!(png.is_err());
     }
 
+    /*
     #[test]
     fn test_invalid_chunk() {
         let mut chunk_bytes: Vec<u8> = testing_chunks()
