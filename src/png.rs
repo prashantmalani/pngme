@@ -26,6 +26,20 @@ impl Png {
         }
         return None;
     }
+
+    fn append_chunk(&mut self, chunk: Chunk) {
+        self.chunks.push(chunk);
+    }
+
+    fn remove_first_chunk(&mut self, chunk_type: &str) -> Result<Chunk> {
+        for (i, chunk) in self.chunks.iter().enumerate() {
+            if chunk.chunk_type().to_string() ==  chunk_type {
+               return Ok(self.chunks.remove(i));
+            }
+        }
+        Err(Box::new(io::Error::new(io::ErrorKind::InvalidData, "chunk type not found")))
+    }
+
 }
 
 impl TryFrom<&[u8]> for Png {
@@ -165,7 +179,6 @@ mod tests {
 
     }
 
-    /*
     #[test]
     fn test_append_chunk() {
         let mut png = testing_png();
@@ -184,6 +197,7 @@ mod tests {
         assert!(chunk.is_none());
     }
 
+    /*
     #[test]
     fn test_png_from_image_file() {
         let png = Png::try_from(&PNG_FILE[..]);
