@@ -40,6 +40,14 @@ impl Png {
         Err(Box::new(io::Error::new(io::ErrorKind::InvalidData, "chunk type not found")))
     }
 
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut result = Vec::new();
+        result.extend_from_slice(&Png::STANDARD_HEADER);
+        for chunk in &self.chunks  {
+            result.extend(chunk.as_bytes());
+        }
+        result
+    }
 }
 
 impl TryFrom<&[u8]> for Png {
@@ -202,7 +210,7 @@ mod tests {
         let png = Png::try_from(&PNG_FILE[..]);
         assert!(png.is_ok());
     }
-/*
+
     #[test]
     fn test_as_bytes() {
         let png = Png::try_from(&PNG_FILE[..]).unwrap();
@@ -210,7 +218,7 @@ mod tests {
         let expected: Vec<u8> = PNG_FILE.to_vec();
         assert_eq!(actual, expected);
     }
-
+/*
     #[test]
     fn test_png_trait_impls() {
         let chunk_bytes: Vec<u8> = testing_chunks()
