@@ -2,13 +2,10 @@ use crate::chunk::Chunk;
 use crate::{Error, Result};
 
 use std::io;
-use std::path::Path;
 
 struct Png {
     chunks: Vec<Chunk>,
 }
-
-const PNG_FILE: &str = "/home/pmalani/pngme/ia-forrest.png";
 
 impl Png {
     const STANDARD_HEADER: [u8; 8] = [137, 80, 78, 71, 13, 10, 26, 10];
@@ -67,16 +64,6 @@ impl TryFrom<&[u8]> for Png {
             }
         }
         Ok(Png::from_chunks(chunk_vec))
-    }
-}
-
-impl TryFrom<&str> for Png {
-    type Error = Error;
-
-    fn try_from(value: &str) -> Result<Self> {
-        // Read all the byutes of the file into an array.
-        let data = std::fs::read(Path::new(value))?;
-        Png::try_from(data.as_slice())
     }
 }
 
@@ -241,6 +228,7 @@ mod tests {
 
         let _png_string = format!("{}", png);
     }
+*/
 
     // This is the raw bytes for a shrunken version of the `dice.png` image on Wikipedia
     const PNG_FILE: [u8; 4803] = [
@@ -488,5 +476,4 @@ mod tests {
         202, 28, 31, 66, 176, 235, 16, 0, 0, 0, 3, 82, 117, 83, 116, 104, 101, 121, 158, 176, 245,
         160, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
     ];
-    */
 }
