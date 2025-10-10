@@ -1,6 +1,7 @@
 use crate::chunk::Chunk;
 use crate::{Error, Result};
 
+use core::fmt;
 use std::io;
 
 struct Png {
@@ -72,6 +73,17 @@ impl TryFrom<&[u8]> for Png {
             }
         }
         Ok(Png::from_chunks(chunk_vec))
+    }
+}
+
+impl fmt::Display for Png {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut i = 0;
+        for chunk in &self.chunks { 
+            i = i + 1;
+            writeln!(f, "Chunk {}, Data: {}", i, chunk)?;
+        }
+        Ok(())
     }
 }
 
@@ -218,7 +230,7 @@ mod tests {
         let expected: Vec<u8> = PNG_FILE.to_vec();
         assert_eq!(actual, expected);
     }
-/*
+
     #[test]
     fn test_png_trait_impls() {
         let chunk_bytes: Vec<u8> = testing_chunks()
@@ -236,7 +248,6 @@ mod tests {
 
         let _png_string = format!("{}", png);
     }
-*/
 
     // This is the raw bytes for a shrunken version of the `dice.png` image on Wikipedia
     const PNG_FILE: [u8; 4803] = [
