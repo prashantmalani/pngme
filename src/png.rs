@@ -2,10 +2,13 @@ use crate::chunk::Chunk;
 use crate::{Error, Result};
 
 use std::io;
+use std::path::Path;
 
 struct Png {
     chunks: Vec<Chunk>,
 }
+
+const PNG_FILE: &str = "/home/pmalani/pngme/ia-forrest.png";
 
 impl Png {
     const STANDARD_HEADER: [u8; 8] = [137, 80, 78, 71, 13, 10, 26, 10];
@@ -67,6 +70,16 @@ impl TryFrom<&[u8]> for Png {
     }
 }
 
+impl TryFrom<&str> for Png {
+    type Error = Error;
+
+    fn try_from(value: &str) -> Result<Self> {
+        // Read all the byutes of the file into an array.
+        let data = std::fs::read(Path::new(value))?;
+        Png::try_from(data.as_slice())
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -118,7 +131,7 @@ mod tests {
             .copied()
             .collect();
 
-        let png = Png::try_from(bytes.as_ref());
+        let png = Png::try_from(bytes.as_slice());
 
         assert!(png.is_ok());
     }
@@ -136,7 +149,7 @@ mod tests {
             .copied()
             .collect();
 
-        let png = Png::try_from(bytes.as_ref());
+        let png = Png::try_from(bytes.as_slice());
 
         assert!(png.is_err());
     }
@@ -158,7 +171,7 @@ mod tests {
 
         chunk_bytes.append(&mut bad_chunk);
 
-        let png = Png::try_from(chunk_bytes.as_ref());
+        let png = Png::try_from(chunk_bytes.as_slice());
 
         assert!(png.is_err());
     }
@@ -197,13 +210,12 @@ mod tests {
         assert!(chunk.is_none());
     }
 
-    /*
     #[test]
     fn test_png_from_image_file() {
         let png = Png::try_from(&PNG_FILE[..]);
         assert!(png.is_ok());
     }
-
+/*
     #[test]
     fn test_as_bytes() {
         let png = Png::try_from(&PNG_FILE[..]).unwrap();
