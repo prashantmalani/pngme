@@ -3,6 +3,7 @@ use std::path::PathBuf;
 #[derive(Debug)]
 pub enum PngMeArgs {
     Encode(EncodeArgs),
+    Decode(DecodeArgs),
 }
 
 #[derive(PartialEq, Debug)]
@@ -17,6 +18,13 @@ pub struct EncodeArgs {
     chunk_type: String,
     payload: String,
 }
+
+#[derive(Debug)]
+pub struct DecodeArgs {
+    file: PathBuf,
+    chunk_type: String,
+}
+
 
 pub fn generate_args(command: &str, filepath: &str, chunk_type: Option<&str>,
     payload: Option<&str>) -> Result<PngMeArgs, ArgErr> {
@@ -33,6 +41,14 @@ pub fn generate_args(command: &str, filepath: &str, chunk_type: Option<&str>,
                                                   payload: String::from(payload.unwrap()) }))
             }
         },
+        "decode" => {
+            if chunk_type.is_none() {
+                Err(ArgErr::MissingArgs(String::from("chunk type")))
+            } else {
+                Ok(PngMeArgs::Decode (DecodeArgs { file: PathBuf::from(filepath),
+                                                chunk_type: String::from(chunk_type.unwrap()) }))
+            }
+        }
         _ => Err(ArgErr::InvalidCommand(String::from(command)))
     }
 }
@@ -59,6 +75,20 @@ mod tests {
         let result = generate_args("encode", "./foo.txt", Some("ruSt"), None);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(String::from("payload")));
+    }
+
+    #[test]
+    pub fn test_decode_valid() {
+        let result = generate_args("decode", "./foo.txt", Some("ruSt"), None);
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), PngMeArgs::Decode(_)));
+    }
+
+    #[test]
+    pub fn test_decode_missing_args_chunk_type() {
+        let result = generate_args("decode", "./foo.txt", None, None);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(String::from("chunk type")));
     }
 }
 
