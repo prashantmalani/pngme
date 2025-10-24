@@ -5,6 +5,7 @@ pub enum PngMeArgs {
     Encode(EncodeArgs),
     Decode(DecodeArgs),
     Remove(RemoveArgs),
+    Print(PrintArgs),   
 }
 
 #[derive(PartialEq, Debug)]
@@ -32,6 +33,10 @@ pub struct RemoveArgs {
     chunk_type: String
 }
 
+#[derive(Debug)]
+pub struct PrintArgs {
+    file: PathBuf,
+}
 
 pub fn generate_args(command: &str, filepath: &str, chunk_type: Option<&str>,
     payload: Option<&str>) -> Result<PngMeArgs, ArgErr> {
@@ -63,6 +68,9 @@ pub fn generate_args(command: &str, filepath: &str, chunk_type: Option<&str>,
                 Ok(PngMeArgs::Remove (RemoveArgs { file: PathBuf::from(filepath),
                                                 chunk_type: String::from(chunk_type.unwrap()) }))
             }
+        }
+        "print" => {
+            Ok(PngMeArgs::Print(PrintArgs{file: PathBuf::from(filepath)}))
         }
         _ => Err(ArgErr::InvalidCommand(String::from(command)))
     }
@@ -118,6 +126,13 @@ mod tests {
         let result = generate_args("remove", "./foo.txt", None, None);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(String::from("chunk type")));
+    }
+
+    #[test]
+    pub fn test_print() {
+        let result = generate_args("print", "./foo.txt", None, None);
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), PngMeArgs::Print(_)));
     }
 }
 
