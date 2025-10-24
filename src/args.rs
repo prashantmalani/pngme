@@ -4,6 +4,7 @@ use std::path::PathBuf;
 pub enum PngMeArgs {
     Encode(EncodeArgs),
     Decode(DecodeArgs),
+    Remove(RemoveArgs),
 }
 
 #[derive(PartialEq, Debug)]
@@ -23,6 +24,12 @@ pub struct EncodeArgs {
 pub struct DecodeArgs {
     file: PathBuf,
     chunk_type: String,
+}
+
+#[derive(Debug)]
+pub struct RemoveArgs {
+    file: PathBuf,
+    chunk_type: String
 }
 
 
@@ -46,6 +53,14 @@ pub fn generate_args(command: &str, filepath: &str, chunk_type: Option<&str>,
                 Err(ArgErr::MissingArgs(String::from("chunk type")))
             } else {
                 Ok(PngMeArgs::Decode (DecodeArgs { file: PathBuf::from(filepath),
+                                                chunk_type: String::from(chunk_type.unwrap()) }))
+            }
+        }
+        "remove" => {
+            if chunk_type.is_none() {
+                Err(ArgErr::MissingArgs(String::from("chunk type")))
+            } else {
+                Ok(PngMeArgs::Remove (RemoveArgs { file: PathBuf::from(filepath),
                                                 chunk_type: String::from(chunk_type.unwrap()) }))
             }
         }
@@ -87,6 +102,20 @@ mod tests {
     #[test]
     pub fn test_decode_missing_args_chunk_type() {
         let result = generate_args("decode", "./foo.txt", None, None);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(String::from("chunk type")));
+    }
+
+    #[test]
+    pub fn test_remove_valid() {
+        let result = generate_args("remove", "./foo.txt", Some("ruSt"), None);
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), PngMeArgs::Remove(_)));
+    }
+
+    #[test]
+    pub fn test_remove_missing_args_chunk_type() {
+        let result = generate_args("remove", "./foo.txt", None, None);
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(String::from("chunk type")));
     }
