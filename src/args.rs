@@ -10,7 +10,7 @@ pub enum PngMeArgs {
 
 #[derive(PartialEq, Debug)]
 pub enum ArgErr {
-    InvalidCommand(String),
+    InvalidCommand,
     MissingArgs(MissingArgType),
 }
 
@@ -78,7 +78,7 @@ pub fn generate_args(command: &str, filepath: &str, chunk_type: Option<&str>,
         "print" => {
             Ok(PngMeArgs::Print(PrintArgs{file: PathBuf::from(filepath)}))
         }
-        _ => Err(ArgErr::InvalidCommand(String::from(command)))
+        _ => Err(ArgErr::InvalidCommand)
     }
 }
 
@@ -90,6 +90,13 @@ mod tests {
         let result = generate_args("encode", "./foo.txt", Some("ruSt"), Some("Deadbeef"));
         assert!(result.is_ok());
         assert!(matches!(result.unwrap(), PngMeArgs::Encode(_)));
+    }
+
+    #[test]
+    pub fn test_invalid_command() {
+        let result = generate_args("invalid", "./foo.txt", Some("ruSt"), Some("Deadbeef"));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), ArgErr::InvalidCommand);
     }
 
     #[test]
