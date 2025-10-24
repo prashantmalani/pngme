@@ -11,7 +11,13 @@ pub enum PngMeArgs {
 #[derive(PartialEq, Debug)]
 pub enum ArgErr {
     InvalidCommand(String),
-    MissingArgs(String),
+    MissingArgs(MissingArgType),
+}
+
+#[derive(PartialEq, Debug)]
+pub enum MissingArgType {
+    ChunkType,
+    Payload,
 }
 
 #[derive(Debug)]
@@ -44,9 +50,9 @@ pub fn generate_args(command: &str, filepath: &str, chunk_type: Option<&str>,
     match command {
         "encode" => {
             if chunk_type.is_none() {
-                Err(ArgErr::MissingArgs(String::from("chunk type")))
+                Err(ArgErr::MissingArgs(MissingArgType::ChunkType))
             } else if payload.is_none() {
-                Err(ArgErr::MissingArgs(String::from("payload")))
+                Err(ArgErr::MissingArgs(MissingArgType::Payload))
             } else {
                 Ok(PngMeArgs::Encode(EncodeArgs { file: PathBuf::from(filepath),
                                                   chunk_type: String::from(chunk_type.unwrap()),
@@ -55,7 +61,7 @@ pub fn generate_args(command: &str, filepath: &str, chunk_type: Option<&str>,
         },
         "decode" => {
             if chunk_type.is_none() {
-                Err(ArgErr::MissingArgs(String::from("chunk type")))
+                Err(ArgErr::MissingArgs(MissingArgType::ChunkType))
             } else {
                 Ok(PngMeArgs::Decode (DecodeArgs { file: PathBuf::from(filepath),
                                                 chunk_type: String::from(chunk_type.unwrap()) }))
@@ -63,7 +69,7 @@ pub fn generate_args(command: &str, filepath: &str, chunk_type: Option<&str>,
         }
         "remove" => {
             if chunk_type.is_none() {
-                Err(ArgErr::MissingArgs(String::from("chunk type")))
+                Err(ArgErr::MissingArgs(MissingArgType::ChunkType))
             } else {
                 Ok(PngMeArgs::Remove (RemoveArgs { file: PathBuf::from(filepath),
                                                 chunk_type: String::from(chunk_type.unwrap()) }))
@@ -90,14 +96,14 @@ mod tests {
     pub fn test_encode_missing_args_chunk_type() {
         let result = generate_args("encode", "./foo.txt", None, Some("Deadbeef"));
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(String::from("chunk type")));
+        assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(MissingArgType::ChunkType));
     }
 
     #[test]
     pub fn test_encode_missing_args_payload() {
         let result = generate_args("encode", "./foo.txt", Some("ruSt"), None);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(String::from("payload")));
+        assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(MissingArgType::Payload));
     }
 
     #[test]
@@ -111,7 +117,7 @@ mod tests {
     pub fn test_decode_missing_args_chunk_type() {
         let result = generate_args("decode", "./foo.txt", None, None);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(String::from("chunk type")));
+        assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(MissingArgType::ChunkType));
     }
 
     #[test]
@@ -125,7 +131,7 @@ mod tests {
     pub fn test_remove_missing_args_chunk_type() {
         let result = generate_args("remove", "./foo.txt", None, None);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(String::from("chunk type")));
+        assert_eq!(result.unwrap_err(), ArgErr::MissingArgs(MissingArgType::ChunkType));
     }
 
     #[test]
